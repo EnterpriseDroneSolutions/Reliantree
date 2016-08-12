@@ -1,6 +1,6 @@
-/* Reliantree Cards */
+/* Reliantree Leaf Nodes */
 
-.rt-card {
+.rt-leaf {
 	position: absolute;
 	background: MintCream;
 	border: 3px solid DarkTurquoise;
@@ -10,7 +10,7 @@
 	font-size: 0.8em;
 	overflow: hidden;
 }
-.rt-card-handle {
+.rt-leaf-handle {
 	position: absolute;
 	width: 14px;
 	height: 14px;
@@ -20,7 +20,7 @@
 	background-size: 14px 14px;
 	cursor: pointer;
 }
-.rt-card-title {
+.rt-leaf-title {
 	background: SandyBrown;
 	padding-left: 10px;
 	padding-top: 2px;
@@ -32,7 +32,7 @@
 	height: 19px;
 	border-bottom: 2px solid #0099a2; /*DarkerTurquoise*/
 }
-.rt-card-description {
+.rt-leaf-description {
 	width: 100%;
 	height: 111px;
 	overflow-y: hidden;
@@ -42,15 +42,15 @@
 	font: inherit;
 	border-bottom: 2px solid #0099a2;
 }
-.rt-card-reliability-table {
+.rt-leaf-reliability-table {
 	border-collapse: collapse;
 	width: 100%;
 	font: inherit;
 }
-.rt-card-reliability-table td {
+.rt-leaf-reliability-table td {
 	padding: 0px;
 }
-.rt-card-failure-rate {
+.rt-leaf-failure-rate {
 	border: 0px;
 	background: inherit;
 	font: inherit;
@@ -61,19 +61,19 @@
 	border-right: 2px solid #0099a2;
 	-moz-appearance:textfield;
 }
-.rt-card-failure-rate::-webkit-outer-spin-button,
-.rt-card-failure-rate::-webkit-inner-spin-button {
+.rt-leaf-failure-rate::-webkit-outer-spin-button,
+.rt-leaf-failure-rate::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-.rt-card-reliability-fixed {
+.rt-leaf-reliability-fixed {
 	height: 19px;
 	width: 19px;
 	margin: 0px;
 	border-left: 2px solid #0099a2;
 	font: inherit;
 }
-.rt-card-reliability-fixed::before {
+.rt-leaf-reliability-fixed::before {
 	display: block;
 	position: relative;
 	width: 19px;
@@ -81,7 +81,7 @@
 	background: MintCream;
 	content: "";
 }
-.rt-card-reliability-fixed::after {
+.rt-leaf-reliability-fixed::after {
 	display: block;
 	position: relative;
 	width: 19px;
@@ -94,12 +94,12 @@
 	text-align: center;
 	background: #f4a460;
 }
-.rt-card-reliability-fixed:checked::after {
+.rt-leaf-reliability-fixed:checked::after {
 	background: #ee7811;
 }
-.rt-card-reliability-fixed:hover::after {
+.rt-leaf-reliability-fixed:hover::after {
 	background: #f8be8a;
 }
-.rt-card-reliability-fixed:checked:hover::after {
+.rt-leaf-reliability-fixed:checked:hover::after {
 	background: #f29340;
 }
