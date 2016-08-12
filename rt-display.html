@@ -1,0 +1,32 @@
+<html>
+	<head>
+		<title>Reliantree Display Test</title>
+		<link rel="stylesheet" type="text/css" href="css/rt-page.css" />
+		<!--
+		<link rel="icon" type="image/png" href="./img/favicon.ico" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		-->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+		<script>window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')</script>
+		<script src="js/rt-drag.js"></script>
+	</head>
+	<body>
+		<div class="rt-card" id="rt-card-prototype">
+			<div class="rt-card-handle"></div>
+			<input class="rt-card-title" type="text" value="Reliantree" />
+			<textarea class="rt-card-description">A tool for creating, analyzing and driving Reliability trees.</textarea>
+			<table class="rt-card-reliability-table" rows="4">
+				<tbody>
+					<tr>
+						<td>
+							<input class="rt-card-failure-rate" type="number" value="0.00000001"/>
+						</td>
+						<td>
+							<input class="rt-card-reliability-fixed" type="checkbox" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</body>
+</html>

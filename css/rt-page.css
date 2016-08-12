@@ -1,0 +1,9 @@
+/* Main Reliantree CSS File */
+
+@import "rt-tree.css";
+
+body {
+	background: SeaShell;
+	font-family: Georgia, serif;
+	font-size: 16px;
+}
