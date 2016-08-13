@@ -32,7 +32,10 @@ function dragNode(s,xOffset,yOffset){
 	if(typeof this.yOffset !== "number") this.yOffset = 0; //As above
 	if(s){
 		s.preventDefault(); //Prevent everything getting selected while dragging
-		$(s.data.targetNode).parent().offset({left:s.pageX-this.xOffset,top:s.pageY-this.yOffset}) //Move the node
+		$(s.data.targetNode).parent().offset({
+			left:	s.pageX-this.xOffset > 0 ? s.pageX-this.xOffset : 0,
+			top:	s.pageY-this.yOffset > 0 ? s.pageY-this.yOffset : 0
+		}); //Move the node
 	}
 }
 
