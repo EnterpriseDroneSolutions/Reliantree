@@ -1,5 +1,11 @@
-//Modified from https://stackoverflow.com/a/14663381
-//Generates a RFC 4122 version 4 GUID using cryptographically random data provided from the browser, or if that's unavailable, psuedorandomly from a time-based seed.
+/*
+guid.js - Generates a RFC 4122 version 4 GUID, using cryptographically random data when available.
+Modified from https://stackoverflow.com/a/14663381
+Copyright (c) 2013 Berni Atelšek
+Copyright (c) 2016 James Rowley
+This work is licensed under The MIT License, without the requirement to reproduce the licence in full.
+To view a copy of the license, visit https://opensource.org/licenses/MIT
+*/
 
 var Guid = Guid || (function () {
 

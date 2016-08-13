@@ -1,4 +1,10 @@
-//rt-drag.js - handles the drag and drop logic as well as creation and deletion of nodes.
+/*
+rt-drag.js - Handles drag and drop logic as well as creation and deletion of nodes in the Reliantree Client.
+Copyright (c) 2016 Enterprise Drone Solutions, LLC
+
+This file is part of Reliantree, which is licensed under the GNU Affero General Public License version 3.
+You should have received a copy of this license along with Reliantree.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 ////////////////////Handlers
 //Auto-grow (and shrink) textarea vertically with content, with an optional minimum and maximum height
