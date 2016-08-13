@@ -9,16 +9,17 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="100"
-   height="100"
-   viewBox="0 0 100 100"
+   width="200"
+   height="200"
+   viewBox="0 0 200 200"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="grid.svg"
    inkscape:export-filename="Y:\var\www\reliantree\img\cardHandle.png"
    inkscape:export-xdpi="9"
-   inkscape:export-ydpi="9">
+   inkscape:export-ydpi="9"
+   shape-rendering="crispEdges">
   <title
      id="title4210">DnD Background</title>
   <defs
@@ -30,9 +31,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6568543"
-     inkscape:cx="67.893349"
-     inkscape:cy="46.707704"
+     inkscape:zoom="2"
+     inkscape:cx="23.380507"
+     inkscape:cy="84.155892"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -67,11 +68,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-952.36216)">
+     transform="translate(0,-852.36216)">
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#808080;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-       d="M 0 0 L 100 0 L 0 0 z M 0 100 L 100 100 L 0 100 z "
-       transform="translate(0,952.36216)"
-       id="path4145" />
+       style="fill:none;fill-rule:evenodd;stroke:#808080;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 0,852.36216 200,0 -200,0 z m 0,200.00004 200,0 -200,0 z"
+       id="path4145"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>

@@ -36,12 +36,37 @@ function dragNode(s,xOffset,yOffset){
 	if(typeof yOffset === "number") this.yOffset = yOffset; //As above
 	if(typeof this.xOffset !== "number") this.xOffset = 0; //Initialize offset with zero
 	if(typeof this.yOffset !== "number") this.yOffset = 0; //As above
-	if(s){
+	if(s && s.data.targetNode){
 		s.preventDefault(); //Prevent everything getting selected while dragging
+		var x = s.pageX-this.xOffset;
+		var y = s.pageY-this.yOffset;
+		var pageW = $(window).width();
+		var pageH = $(window).height();
+		var m = $("#rt-map").offset();
+		if(s.pageX && s.pageY){
+			var bound = 50;
+			var scale = 12;
+			if(s.pageX<bound){
+				autoPan((bound-s.pageX)*scale);
+			}else if(s.pageX>pageW-bound){
+				autoPan((bound-(pageW-s.pageX))*-scale);
+			}else{
+				autoPan(0);
+			}
+			if(s.pageY<bound){
+				autoPan(null,(bound-s.pageY)*scale);
+			}else if(s.pageY>pageH-bound){
+				autoPan(null,(bound-(pageH-s.pageY))*-scale);
+			}else{
+				autoPan(null,0);
+			}
+		}
 		$(s.data.targetNode).parent().offset({
-			left:	s.pageX-this.xOffset > 0 ? s.pageX-this.xOffset : 0,
-			top:	s.pageY-this.yOffset > 0 ? s.pageY-this.yOffset : 0
+			left: x ? x : this.x,
+			top: y ? y : this.y
 		}); //Move the node
+		this.x = x ? x : this.x;
+		this.y = y ? y : this.y;
 	}
 }
 
@@ -61,6 +86,33 @@ function dragMap(s,xStart,yStart){
 	}
 }
 
+//Auto-pan map at set velocity (triggered by dragging a node to the end of the screen)
+function autoPan(vx,vy){
+	var max = 500;
+	if(typeof vx === "number") this.vx = vx > -max ? vx < max ? vx : max : -max; //Get new velocity (in pixels per second)
+	if(typeof vy === "number") this.vy = vy;
+	if((this.vx || this.vy ) && ( vx !== this.vx && vy !== this.vy )){
+		var now = window.performance.now ? window.performance.now() : Date.now();
+		var dt = this.now ? now-this.now : 16;
+		this.now = now;
+		var m = $("#rt-map");
+		var o = m.offset();
+		var w = -m.width();
+		var h = -m.height();
+		var fps = 60;
+		var x = this.vx*dt*0.001+o.left;
+		var y = this.vy*dt*0.001+o.top;
+		if(x>0) x=0;
+		if(y>0) y=0;
+		if(x<w) x=w;
+		if(y<h) y=h;
+		m.offset({left:x,top:y});
+		$(window).triggerHandler("mousemove");
+	}
+	if(!(this.vx || this.vy)){
+		this.now = null;
+	}
+}
 
 ////////////////////Initialization
 $(function(){
@@ -79,7 +131,7 @@ $(function(){
 				.css({'height':'111'}); //Reset to default height
 		});
 		
-	//Drag and drop nodes (copypast 
+	//Drag and drop nodes 
 	$('.rt-node-handle')
 		.on('mousedown',function(e){ //Begin drag on mousedown on node's handle
 			e.stopPropagation();
@@ -101,11 +153,16 @@ $(function(){
 		.on('mouseup',function(){
 			$(window).off('mousemove', dragNode);
 			$(window).off('mousemove', dragMap);
+			autoPan(0,0); //Stop autopanning
 			$("#rt-map-grid").css({"opacity":"0"}); //Hide levels grid
 		});
 	
+	//Autopan map
+	$("#rt-map").offset({left:$(window).width()*-4.5}); //Get map into center position
+	window.setInterval(autoPan,16.666); //Run panner at ~60fps
+	
 	//Test code for multiple nodes.
 	for(var i = 0; i<3; i++){
-		$('#rt-node-prototype').clone(true).show().offset({top:8,left:160*i+50+$(window).width()*5}).appendTo("#rt-nodes");
+		$('#rt-node-prototype').clone(true).show().offset({top:8,left:160*i+50+$(window).width()*4.5}).appendTo("#rt-nodes");
 	}
 });
