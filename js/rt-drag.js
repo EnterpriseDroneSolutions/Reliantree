@@ -45,10 +45,28 @@ function dragNode(s,xOffset,yOffset){
 	}
 }
 
+//Pin map to cursor for panning action
+function dragMap(s,xStart,yStart){
+	if(typeof xStart === "number" && typeof xStart === "number"){
+		this.xStart = xStart; //Get a new mouse start point from pan start
+		this.yStart = yStart; //As above
+		this.oStart = $("#rt-map").offset(); //Get map start coords
+	}
+	if(s){
+		s.preventDefault(); //Prevent everything getting selected while panning
+		$("#rt-map").offset({
+			left:	s.pageX-this.xStart+this.oStart.left,
+			top:	s.pageY-this.yStart+this.oStart.top < 0 ? s.pageY-this.yStart+this.oStart.top : 0
+		}); //Pan the map
+	}
+}
+
 
 ////////////////////Initialization
 $(function(){
+	
 	//////////Handlers - Interface Niceties
+	
 	//Grow node description field with contents when and only when focused.
 	$('.rt-node-description')
 		.on('focus',function(){
@@ -60,16 +78,34 @@ $(function(){
 				.off('input', growNodeDesc) //Disable autogrow
 				.css({'height':'111'}); //Reset to default height
 		});
-	//Drag and drop nodes
+		
+	//Drag and drop nodes (copypast 
 	$('.rt-node-handle')
 		.on('mousedown',function(e){ //Begin drag on mousedown on node's handle
+			e.stopPropagation();
 			var offset = $(this).offset(); //Get the current location of the node
 			dragNode(null,e.pageX-offset.left,e.pageY-offset.top); //Set the drag offset to keep the exact part of the handle clicked, under the cursor
 			$(window).on('mousemove', {targetNode: this}, dragNode); //Move the node any time the mouse moves
-		})
-	$(window)
-		.on('mouseup',function(){ //End drag on mouseup anywhere
-			$(window).off('mousemove', dragNode);
+			$("#rt-map-grid").css({"opacity":"1"}); //Show levels grid
 		});
-	$('#rt-node-prototype').clone(true).offset({top:8,left:200}).appendTo("body"); //Test code for multiple nodes.
+		
+	//Pan map
+	$("body")
+		.on('mousedown',function(e){ //Begin pan on mousedown on background
+			dragMap(null,e.pageX,e.pageY); //Set the mouse startpoint
+			$(window).on('mousemove', dragMap); //Pan the map any time the mouse moves
+		});//*/
+	
+	//End drag and pan on mouseup anywhere
+	$(window)
+		.on('mouseup',function(){
+			$(window).off('mousemove', dragNode);
+			$(window).off('mousemove', dragMap);
+			$("#rt-map-grid").css({"opacity":"0"}); //Hide levels grid
+		});
+	
+	//Test code for multiple nodes.
+	for(var i = 0; i<3; i++){
+		$('#rt-node-prototype').clone(true).show().offset({top:8,left:160*i+50+$(window).width()*5}).appendTo("#rt-nodes");
+	}
 });

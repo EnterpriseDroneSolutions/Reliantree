@@ -1,0 +1,26 @@
+/*
+rt-map.css - Stylesheet for the map (panning system) in the Reliantree Client.
+Copyright (c) 2016 Enterprise Drone Solutions, LLC
+
+This file is part of Reliantree, which is licensed under the GNU Affero General Public License version 3.
+You should have received a copy of this license along with Reliantree.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#rt-map{
+	position: absolute;
+	top: 0px;
+	left: -500%;
+	width: 1000%;
+	height: 1000%;
+}
+
+#rt-map-grid{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background: url("../img/grid.svg");
+	background-size: 200px 200px;
+	transition: opacity .5s;
+	opacity: 0;
+}
+	

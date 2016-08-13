@@ -18,22 +18,31 @@ You should have received a copy of this license along with Reliantree.  If not, 
 		<script src="js/rt-drag.js"></script>
 	</head>
 	<body>
+		<!-- Logical element prototypes -->
 		<div class="rt-node" id="rt-node-prototype">
+			<div class="rt-node-wrapper">
+				<input class="rt-node-title" type="text" value="Reliantree" />
+				<textarea class="rt-node-description">A tool for creating, analyzing and driving Reliability trees.</textarea>
+				<table class="rt-node-reliability-table" rows="4">
+					<tbody>
+						<tr>
+							<td>
+								<input class="rt-node-failure-rate" type="number" value="0.00000001"/>
+							</td>
+							<td>
+								<input class="rt-node-reliability-fixed" type="checkbox" />
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 			<div class="rt-node-handle noselect"></div>
-			<input class="rt-node-title" type="text" value="Reliantree" />
-			<textarea class="rt-node-description">A tool for creating, analyzing and driving Reliability trees.</textarea>
-			<table class="rt-node-reliability-table" rows="4">
-				<tbody>
-					<tr>
-						<td>
-							<input class="rt-node-failure-rate" type="number" value="0.00000001"/>
-						</td>
-						<td>
-							<input class="rt-node-reliability-fixed" type="checkbox" />
-						</td>
-					</tr>
-				</tbody>
-			</table>
+		</div>
+		<!-- end prototypes -->
+		<div id="rt-map">
+			<div id="rt-map-grid"></div>
+			<div id="rt-branches"></div>
+			<div id="rt-nodes"></div>
 		</div>
 	</body>
 </html>

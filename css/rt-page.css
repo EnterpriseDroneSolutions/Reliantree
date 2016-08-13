@@ -7,11 +7,13 @@ You should have received a copy of this license along with Reliantree.  If not, 
 */
 
 @import "rt-tree.css";
+@import "rt-map.css";
 
 body {
 	background: SeaShell;
 	font-family: Georgia, serif;
 	font-size: 16px;
+	overflow: hidden;
 }
 
 .noselect {
