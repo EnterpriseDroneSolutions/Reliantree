@@ -45,7 +45,7 @@ function dragNode(s,xOffset,yOffset){
 		var m = $("#rt-map").offset();
 		if(s.pageX && s.pageY){
 			var bound = 50;
-			var scale = 12;
+			var scale = 18;
 			if(s.pageX<bound){
 				autoPan((bound-s.pageX)*scale);
 			}else if(s.pageX>pageW-bound){
@@ -61,13 +61,27 @@ function dragNode(s,xOffset,yOffset){
 				autoPan(null,0);
 			}
 		}
+		x = x ? x : this.x;
+		y = y ? y : this.y;
 		$(s.data.targetNode).parent().offset({
-			left: x ? x : this.x,
-			top: y ? y : this.y
+			left: x,
+			top: y
 		}); //Move the node
+		$("#rt-node-prototype").offset({
+			left: x,
+			top: Math.floor((y+80)/200)*200+23+m.top%200 //Snap to vertical grid
+		}); //Move the preview node
 		this.x = x ? x : this.x;
 		this.y = y ? y : this.y;
 	}
+}
+
+//Snap node to nearest valid position
+function snapNode(node){
+	var p = node.position();
+	node.css({
+		"top": Math.floor((p.top+80)/200)*200+23
+	});
 }
 
 //Pin map to cursor for panning action
@@ -75,11 +89,11 @@ function dragMap(s,xStart,yStart){
 	if(typeof xStart === "number" && typeof xStart === "number"){
 		this.xStart = xStart; //Get a new mouse start point from pan start
 		this.yStart = yStart; //As above
-		this.oStart = $("#rt-map").offset(); //Get map start coords
+		this.oStart = $("#rt-map").position(); //Get map start coords
 	}
 	if(s){
 		s.preventDefault(); //Prevent everything getting selected while panning
-		$("#rt-map").offset({
+		$("#rt-map").css({
 			left:	s.pageX-this.xStart+this.oStart.left,
 			top:	s.pageY-this.yStart+this.oStart.top < 0 ? s.pageY-this.yStart+this.oStart.top : 0
 		}); //Pan the map
@@ -88,15 +102,15 @@ function dragMap(s,xStart,yStart){
 
 //Auto-pan map at set velocity (triggered by dragging a node to the end of the screen)
 function autoPan(vx,vy){
-	var max = 500;
+	var max = 800;
 	if(typeof vx === "number") this.vx = vx > -max ? vx < max ? vx : max : -max; //Get new velocity (in pixels per second)
-	if(typeof vy === "number") this.vy = vy;
+	if(typeof vy === "number") this.vy = vy > -max ? vy < max ? vy : max : -max;
 	if((this.vx || this.vy ) && ( vx !== this.vx && vy !== this.vy )){
 		var now = window.performance.now ? window.performance.now() : Date.now();
 		var dt = this.now ? now-this.now : 16;
 		this.now = now;
 		var m = $("#rt-map");
-		var o = m.offset();
+		var o = m.position();
 		var w = -m.width();
 		var h = -m.height();
 		var fps = 60;
@@ -106,7 +120,7 @@ function autoPan(vx,vy){
 		if(y>0) y=0;
 		if(x<w) x=w;
 		if(y<h) y=h;
-		m.offset({left:x,top:y});
+		m.css({left:x,top:y});
 		$(window).triggerHandler("mousemove");
 	}
 	if(!(this.vx || this.vy)){
@@ -116,6 +130,8 @@ function autoPan(vx,vy){
 
 ////////////////////Initialization
 $(function(){
+	
+	var lastDragNode = $("#rt-node-prototype");
 	
 	//////////Handlers - Interface Niceties
 	
@@ -137,6 +153,9 @@ $(function(){
 			e.stopPropagation();
 			var offset = $(this).offset(); //Get the current location of the node
 			dragNode(null,e.pageX-offset.left,e.pageY-offset.top); //Set the drag offset to keep the exact part of the handle clicked, under the cursor
+			lastDragNode=$(this).parent();
+			lastDragNode.css({"opacity":"0.5"});
+			$("#rt-node-prototype").show().offset(lastDragNode.offset());
 			$(window).on('mousemove', {targetNode: this}, dragNode); //Move the node any time the mouse moves
 			$("#rt-map-grid").css({"opacity":"1"}); //Show levels grid
 		});
@@ -155,6 +174,9 @@ $(function(){
 			$(window).off('mousemove', dragMap);
 			autoPan(0,0); //Stop autopanning
 			$("#rt-map-grid").css({"opacity":"0"}); //Hide levels grid
+			lastDragNode.css({"opacity":"1"});
+			snapNode(lastDragNode);
+			$("#rt-node-prototype").hide();
 		});
 	
 	//Autopan map
@@ -163,6 +185,6 @@ $(function(){
 	
 	//Test code for multiple nodes.
 	for(var i = 0; i<3; i++){
-		$('#rt-node-prototype').clone(true).show().offset({top:8,left:160*i+50+$(window).width()*4.5}).appendTo("#rt-nodes");
+		$('#rt-node-prototype').clone(true).removeAttr("id").show().offset({top:8,left:160*i+50+$(window).width()*4.5}).appendTo("#rt-nodes");
 	}
 });
