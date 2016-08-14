@@ -70,13 +70,13 @@ var sampleTree = {
 };
 ////////////////////////////////////////////////END TEMP BLOCK
 
-function rtTree(json) {
+function rtTree(json){
 	
 	var tree; //The internal tree object
 	
 	//Basic validation of incoming JSON to see if it uses our data format and therefore is a tree
 	function validateRtTree(tree){
-		var rtAcceptableVersion = /(\d+\.){2}(\d+G?)/g;
+		var rtAcceptableVersion = /^(\d+\.){2}(\d+G?)$/g;
 		var rtAcceptableCalculation = /up|down/g;
 		if (
 			typeof tree.reliantreeVersion === "string"
@@ -110,9 +110,51 @@ function rtTree(json) {
 		return tree;
 	}
 	
+	function simpleTraverse(tree, ID, callback, depth){
+		depth = typeof depth === "number" ? depth : 0;
+		if (tree.nodes[ID]) {
+			for (child in tree.nodes[ID].children) {
+				simpleTraverse(tree, tree.nodes[ID].children[child], callback, depth+1);
+			}
+			callback(tree, ID, depth);
+		}
+	}
+			
+	
+	//Initialize internal properties and indices from provided tree
+	function loadTree(tree){
+		var headless = [];
+		if (tree.treeOrigin in tree.nodes) {
+			var processed = [];
+			simpleTraverse(tree, tree.treeOrigin, function (tree, ID, depth){
+				var node = tree.nodes[ID];
+				node.internal = {};
+				node.internal.level = depth;
+				node.internal.bigFailureRate = new Big(node.failureRate);
+				processed.push(ID);
+			});
+			for (ID in tree.nodes) {
+				if (processed.indexOf(ID) === -1) {
+					headless.push(ID);
+				}
+			}
+		} else {
+			for (ID in tree.nodes) {
+				headless.push(ID);
+			}
+		}
+		for (node in headless) {
+			var node = tree.nodes[headless[node]];
+			node.internal = {};
+			node.internal.level = depth;
+			node.internal.bigFailureRate = new Big(node.failureRate);
+		}
+		return tree;
+	}
+	
 	//Initialize the tree, either with an empty tree or the supplied JSON
 	if (typeof(json) === "object" && validateRtTree(json) ) { //If we have been given a valid reliantree, use it
-		tree = json;
+		tree = loadTree(json);
 		if (tree.reliantreeVersion != rtCurrentVersion) { //Update version info if not up-to-date
 			tree.reliantreeVersion = rtCurrentVersion;
 			tree.rtClientVersionList.unshift(rtCurrentVersion);
@@ -188,15 +230,9 @@ function rtTree(json) {
 				if (verify) { //If it does, make sure the intention is to delete them all
 					tree.nodes[tree.nodes[ID].parent].children.splice(tree.nodes[tree.nodes[ID].parent].children.indexOf(ID),1); //Remove node from children of current parent
 					var hitList = []; //An array of the GUIDs of all the nodes to be deleted
-					var buildHitList = function (ID){ //A recursive function that traverses the subtree originating from the specified node
-						if (tree.nodes[ID]) {
-							for (child in tree.nodes[ID].children) {
-								buildHitList(tree.nodes[ID].children[child]);
-							}
-						}
-						hitList.push(ID); //Add the current node to the deletion list
-					};
-					buildHitList(ID);
+					simpleTraverse(tree, ID, function (tree, ID){ //Build list of all children of the node
+						hitList.push(ID);
+					});
 					for(node in hitList){ //Delete all the nodes in the deletion list
 						delete tree.nodes[hitList[node]];
 					}
