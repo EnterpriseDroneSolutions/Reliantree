@@ -25,7 +25,7 @@ function growText(s,minHeight,maxHeight){
 					: maxHeight
 				: s.scrollHeight
 		);
-};
+}
 
 //Grow node description field - extension of growText
 function growNodeDesc(s){growText(s.target,107);}
@@ -42,7 +42,7 @@ function dragNode(s,xOffset,yOffset){
 		var y = s.pageY-this.yOffset;
 		var pageW = $(window).width();
 		var pageH = $(window).height();
-		var m = $("#rt-map").offset();
+		var m = $("#rt-map").position();
 		if(s.pageX && s.pageY){
 			var bound = 50;
 			var scale = 18;
@@ -63,25 +63,28 @@ function dragNode(s,xOffset,yOffset){
 		}
 		x = x ? x : this.x;
 		y = y ? y : this.y;
-		$(s.data.targetNode).parent().offset({
+		$(s.data.targetNode).parent().css({
 			left: x,
 			top: y
 		}); //Move the node
-		$("#rt-node-prototype").offset({
-			left: x,
-			top: Math.floor((y+80)/200)*200+23+m.top%200 //Snap to vertical grid
-		}); //Move the preview node
+		$("#rt-node-prototype").css(snapNode($(s.data.targetNode).parent())); //Move the preview node
 		this.x = x ? x : this.x;
 		this.y = y ? y : this.y;
 	}
 }
 
-//Snap node to nearest valid position
-function snapNode(node){
-	var p = node.position();
-	node.css({
-		"top": Math.floor((p.top+80)/200)*200+23
-	});
+//Return nearest valid position for a node
+function snapNode(node, snap){
+	var op = node.position();
+	var np = {
+		left: op.left,
+		top: Math.floor((op.top+80)/200)*200+23
+	};
+	if(snap){
+		node.css(np);
+	}else{
+		return np;
+	}
 }
 
 //Pin map to cursor for panning action
@@ -133,8 +136,6 @@ $(function(){
 	
 	var lastDragNode = $("#rt-node-prototype");
 	
-	//////////Handlers - Interface Niceties
-	
 	//Grow node description field with contents when and only when focused.
 	$('.rt-node-description')
 		.on('focus',function(){
@@ -151,7 +152,7 @@ $(function(){
 	$('.rt-node-handle')
 		.on('mousedown',function(e){ //Begin drag on mousedown on node's handle
 			e.stopPropagation();
-			var offset = $(this).offset(); //Get the current location of the node
+			var offset = $(this).parent().position(); //Get the current location of the node
 			dragNode(null,e.pageX-offset.left,e.pageY-offset.top); //Set the drag offset to keep the exact part of the handle clicked, under the cursor
 			lastDragNode=$(this).parent();
 			lastDragNode.css({"opacity":"0.5"});
@@ -161,11 +162,11 @@ $(function(){
 		});
 		
 	//Pan map
-	$("body")
-		.on('mousedown',function(e){ //Begin pan on mousedown on background
+	$("#rt-map")
+		.on('mousedown',"#rt-map-grid",function(e){ //Begin pan on mousedown on background
 			dragMap(null,e.pageX,e.pageY); //Set the mouse startpoint
 			$(window).on('mousemove', dragMap); //Pan the map any time the mouse moves
-		});//*/
+		});
 	
 	//End drag and pan on mouseup anywhere
 	$(window)
@@ -175,7 +176,7 @@ $(function(){
 			autoPan(0,0); //Stop autopanning
 			$("#rt-map-grid").css({"opacity":"0"}); //Hide levels grid
 			lastDragNode.css({"opacity":"1"});
-			snapNode(lastDragNode);
+			snapNode(lastDragNode, true);
 			$("#rt-node-prototype").hide();
 		});
 	
