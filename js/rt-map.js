@@ -1,5 +1,5 @@
 /*
-rt-drag.js - Handles drag and drop logic as well as creation and deletion of nodes in the Reliantree Client.
+rt-map.js - Handles drag and drop logic as well as creation and deletion of nodes in the Reliantree Client.
 Copyright (c) 2016 Enterprise Drone Solutions, LLC
 
 This file is part of Reliantree, which is licensed under the GNU Affero General Public License version 3.
