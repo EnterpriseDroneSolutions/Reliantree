@@ -178,7 +178,12 @@ function rtTree(json){
 		node.internal.level = -1;
 		return node;
 	}
-		
+	
+	//Remove node from children of parent
+	function removeFromParent (ID){
+		tree.nodes[tree.nodes[ID].parent].children.splice(tree.nodes[tree.nodes[ID].parent].children.indexOf(ID),1);
+	}
+	
 	this.node = {}; //All node methods
 	
 	//Create a new (empty) node
@@ -212,7 +217,7 @@ function rtTree(json){
 	this.node.setParent = function (ID, parentID){
 		if (tree.nodes[ID] && tree.nodes[parentID]) { //Verify both nodes exist
 			//if (tree.nodes[ID].internal.level >= tree.nodes[parentID].internal.level) { //TODO: implement level calculation elsewhere
-				tree.nodes[tree.nodes[ID].parent].children.splice(tree.nodes[tree.nodes[ID].parent].children.indexOf(ID),1); //Remove node from children of current parent
+				removeFromParent(ID); //Remove node from children of current parent
 				tree.nodes[ID].parent = parentID; //Set node's new parent
 				tree.nodes[parentID].children.push(ID); //Add node to children of new parent
 			//} else {
@@ -228,7 +233,7 @@ function rtTree(json){
 		if (tree.nodes[ID]) { //Verify node exists
 			if (tree.nodes[ID].children !== []) { //See if it has children
 				if (verify) { //If it does, make sure the intention is to delete them all
-					tree.nodes[tree.nodes[ID].parent].children.splice(tree.nodes[tree.nodes[ID].parent].children.indexOf(ID),1); //Remove node from children of current parent
+					removeFromParent(ID); //Remove node from children of current parent
 					var hitList = []; //An array of the GUIDs of all the nodes to be deleted
 					simpleTraverse(tree, ID, function (tree, ID){ //Build list of all children of the node
 						hitList.push(ID);
@@ -241,7 +246,7 @@ function rtTree(json){
 					return false;
 				}
 			} else { //If it has no children, we can just delete it.
-				tree.nodes[tree.nodes[ID].parent].children.splice(tree.nodes[tree.nodes[ID].parent].children.indexOf(ID),1); //Remove node from children of current parent
+				removeFromParent(ID); //Remove node from children of current parent
 				delete tree.nodes[ID];
 				return true;
 			}
@@ -251,6 +256,22 @@ function rtTree(json){
 	}
 	
 	this.tree = {}; //All tree methods
+	
+	//Set the tree origin
+	this.tree.setOrigin = function (ID){
+		if (tree.nodes[ID]) {
+			var levelDiff = tree.nodes[ID].internal.level;
+			simpleTraverse(tree, ID, function (tree, ID){
+				tree.nodes[ID].internal.level -= levelDiff; //Lower the level of everything so that the tree starts at zero
+			});
+			removeFromParent(ID)
+			simpleTraverse(tree, ID, function (tree, ID){
+				tree.nodes[ID].internal.level = tree.nodes[ID].internal.level * -1 - 1; //Change all level data to negative
+			});
+			tree.treeOrigin = ID;
+			tree.nodes[ID].parent = null;
+		}
+	}
 	
 	//Return copy of the tree
 	this.tree.access = function (){
