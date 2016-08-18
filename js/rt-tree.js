@@ -21,7 +21,7 @@ var sampleTree = {
 			"type":"and", //Specify that this node uses AND calculations on its children
 			"title":"Starting Point",
 			"description":"Tree traversal starts here",
-			"failureRate":0.0001234, //Chance of failure in any hour
+			"failureRate":"0.0001234", //Chance of failure in any hour
 			"fixedRate":true, //Whether the above is user-specified (true) or calculated (false) (basically, tree traversal either starts or stops here)
 			"parent":null, //The parent node (null if this is the tree origin, else if null then the node is disconnected from the tree and ignored)
 			"children":["19a7c415-192e-44b2-b7d9-ec2023e4c539","424892c9-0c0a-4b93-8ec0-ec52b2161c9a"] //The child nodes (empty array if no children)
@@ -30,7 +30,7 @@ var sampleTree = {
 			"type":"or", //Specify that this node uses OR calculations on its children
 			"title":"Middle Node",
 			"description":"It has something above and below it",
-			"failureRate":0.0001234,
+			"failureRate":"0.0001234",
 			"fixedRate":false,
 			"parent":"36c86daf-606d-4eca-94b1-2d82f5fa6e38",
 			"children":["cbdecc9b-830b-4c9a-a0cd-48bfcea95899","5e599aee-8550-4ee8-bddd-f35184f181fb"]
@@ -39,7 +39,7 @@ var sampleTree = {
 			"type":null, //Type is null if it has no children 
 			"title":"End Node",
 			"description":"There's nothing below this",
-			"failureRate":0.0001234,
+			"failureRate":"0.0001234",
 			"fixedRate":false,
 			"parent":"36c86daf-606d-4eca-94b1-2d82f5fa6e38",
 			"children":[]
@@ -48,7 +48,7 @@ var sampleTree = {
 			"type":null,
 			"title":"Branch Terminus",
 			"description":"Reliantree sure is refreshing",
-			"failureRate":0.0001234,
+			"failureRate":"0.0001234",
 			"fixedRate":false,
 			"parent":"19a7c415-192e-44b2-b7d9-ec2023e4c539",
 			"children":[]
@@ -57,7 +57,7 @@ var sampleTree = {
 			"type":null,
 			"title":"A Twig",
 			"description":"I was a leaf in a previous life, and a card before that.",
-			"failureRate":0.0001234,
+			"failureRate":"0.0001234",
 			"fixedRate":false,
 			"parent":"19a7c415-192e-44b2-b7d9-ec2023e4c539",
 			"children":[]
@@ -70,12 +70,228 @@ var sampleTree = {
 };
 ////////////////////////////////////////////////END TEMP BLOCK
 
+
+//Reliantree-compliant version number type with comparison operators
+function rtVersionNumber(initial, minor, revision, gold){
+	//Internals
+	var vn = {};
+	var self = this;
+	
+	//Reused regex
+	var acceptableVersionNumber = /^(\d+\.){2}(\d+G?)$/;
+	var acceptableNumber = /^[0-9]+$/g;
+	var acceptableBoolean = /^true|false$/i;
+	
+	//String parser
+	function parseVersionNumber(input){
+		if (typeof input === "string" && acceptableVersionNumber.test(input)) {
+			var split = input.split(".");
+			vn.major = parseInt(split[0]);
+			vn.minor = parseInt(split[1]);
+			vn.revision = parseInt(split[2]);
+			vn.gold = input.includes("G");
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	//Constructor
+	if (!parseVersionNumber(initial)) {
+		if (typeof initial === "number" && initial >= 0) {
+			vn.major = initial;
+		} else {
+			vn.major = Math.floor(Math.random() * 10);
+		}
+		if (typeof minor === "number" && minor >= 0) {
+			vn.minor = minor;
+		} else {
+			vn.minor = Math.floor(Math.random() * 30);
+		}
+		if (typeof revision === "number" && revision >= 0) {
+			vn.revision = revision;
+		} else {
+			vn.revision = Math.floor(Math.random() * 50);
+		}
+		if (typeof gold === "boolean") {
+			vn.gold = gold;
+		} else {
+			vn.gold = Math.round(Math.random()) ? true : false;
+		}
+	}
+	
+	//Generic setter for version number numeric property
+	function setVnNumericProp(set, prop){
+		if (prop in vn) {
+			if (typeof set === "number" && set >= 0) {
+				vn[prop] = set;
+			} else if (typeof set === "string" && acceptableNumber.test(set)) {
+				vn[prop] = parseInt(set);
+			} else {
+				throw "Invalid input!";
+			}
+		} else {
+			throw "Nonexistant property!";
+		}
+	}
+	
+	//Generic setter for version number boolean property
+	function setVnBooleanProp(set, prop){
+		if (prop in vn) {
+			if (typeof set === "boolean") {
+				vn[prop] = set;
+			} else if (typeof set === "string" && acceptableBoolean.test(set)) {
+				vn[prop] = set.toLowerString() == "true" ? true : false;
+			} else if (typeof set === "number") {
+				vn[prop] = set ? true : false;
+			} else {
+				throw "Invalid input!";
+			}
+		} else {
+			throw "Nonexistant property!";
+		}
+	}
+	
+	//Generic external property definer
+	function addVnExternalProp(prop, bool){
+		if (prop in vn) {
+			var props = {
+				enumerable: true,
+				get : function (){ return vn[prop]; }
+			};
+			if (bool === true) {
+				props.set = function (set){ setVnBooleanProp(set, prop); };
+			} else {
+				props.set = function (set){ setVnNumericProp(set, prop); };
+			}
+			Object.defineProperty(self, prop, props);
+		} else {
+			throw "Nonexistant property!";
+		}
+	}
+	
+	//Basic exposed properties
+	addVnExternalProp("major",		false	);
+	addVnExternalProp("minor",		false	);
+	addVnExternalProp("revision",	false	);
+	addVnExternalProp("gold",		true	);
+	
+	//Exports version number as string
+	this.toString = function (){
+		return vn.major.toString() + "." + vn.minor.toString() + "." + vn.revision.toString() + (vn.gold ? "G" : "");
+	}
+	
+	//Version number string get/set
+	Object.defineProperty(self, "vn", {
+		get: self.toString,
+		set: function (set){
+				if (!parseVersionNumber(set)) {
+					throw "Invalid input!";
+				}
+			}
+	});
+	
+	this.equals = function (rtvn, weak){
+		if (rtvn.constructor.name === "rtVersionNumber") {
+			if ( vn.major == rtvn.major && vn.minor == rtvn.minor && vn.revision == rtvn.revision ){
+				if( weak === true ) {
+					return true;
+				} else {
+					if ( vn.gold == rtvn.gold ) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			} else {
+				return false;
+			}
+		} else {
+			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
+		}
+	};
+	
+	this.greaterThan = function (rtvn){
+		if (rtvn.constructor.name === "rtVersionNumber") {
+			if (vn.major > rtvn.major) {
+				return true;
+			} else if (vn.minor > rtvn.minor) {
+				return true;
+			} else if (vn.revision > rtvn.revision) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
+		}
+	};
+	
+	this.greaterThanOrEqual = function (rtvn, weak){
+		if (rtvn.constructor.name === "rtVersionNumber") {
+			if (vn.major > rtvn.major) {
+				return true;
+			} else if (vn.minor > rtvn.minor) {
+				return true;
+			} else if (vn.revision > rtvn.revision) {
+				return true;
+			} else if (self.equals(rtvn, weak)) {
+				return false;
+			}
+		} else {
+			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
+		}
+	};
+	
+	this.lessThan = function (rtvn){
+		if (rtvn.constructor.name === "rtVersionNumber") {
+			if (vn.major < rtvn.major) {
+				return true;
+			} else if (vn.minor < rtvn.minor) {
+				return true;
+			} else if (vn.revision < rtvn.revision) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
+		}
+	};
+	
+	this.lessThanOrEqual = function (rtvn, weak){
+		if (rtvn.constructor.name === "rtVersionNumber") {
+			if (vn.major < rtvn.major) {
+				return true;
+			} else if (vn.minor < rtvn.minor) {
+				return true;
+			} else if (vn.revision < rtvn.revision) {
+				return true;
+			} else if (self.equals(rtvn, weak)) {
+				return false;
+			}
+		} else {
+			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
+		}
+	};
+	
+	return self;
+};
+
 function rtTree(json){
 	
 	var tree; //The internal tree object
 	
+	var self = this;
+	
+	this.util = {}; //All utility functions that can be safely exposed
+	
+	function isGUID(input){
+		return /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$/.test(input);
+	}
+	
 	//Basic validation of incoming JSON to see if it uses our data format and therefore is a tree
-	function validateRtTree(tree){
+	this.util.validateRtTree = function (tree){
 		var rtAcceptableVersion = /^(\d+\.){2}(\d+G?)$/g;
 		var rtAcceptableCalculation = /up|down/g;
 		if (
@@ -98,7 +314,7 @@ function rtTree(json){
 	}
 	
 	//Create a new empty tree
-	function emptyRtTree(){
+	this.util.emptyRtTree = function (){
 		var tree = {};
 		tree.reliantreeVersion = rtCurrentVersion;
 		tree.rtServerVersion = "";
@@ -110,23 +326,22 @@ function rtTree(json){
 		return tree;
 	}
 	
-	function simpleTraverse(tree, ID, callback, depth){
+	this.util.simpleTraverse = function (tree, ID, callback, depth){
 		depth = typeof depth === "number" ? depth : 0;
 		if (tree.nodes[ID]) {
 			for (child in tree.nodes[ID].children) {
-				simpleTraverse(tree, tree.nodes[ID].children[child], callback, depth+1);
+				self.util.simpleTraverse(tree, tree.nodes[ID].children[child], callback, depth+1);
 			}
 			callback(tree, ID, depth);
 		}
 	}
-			
 	
 	//Initialize internal properties and indices from provided tree
 	function loadTree(tree){
 		var headless = [];
 		if (tree.treeOrigin in tree.nodes) {
 			var processed = [];
-			simpleTraverse(tree, tree.treeOrigin, function (tree, ID, depth){
+			self.util.simpleTraverse(tree, tree.treeOrigin, function (tree, ID, depth){
 				var node = tree.nodes[ID];
 				node.internal = {};
 				node.internal.level = depth;
@@ -146,30 +361,30 @@ function rtTree(json){
 		for (node in headless) {
 			var node = tree.nodes[headless[node]];
 			node.internal = {};
-			node.internal.level = depth;
+			node.internal.level = -1;
 			node.internal.bigFailureRate = new Big(node.failureRate);
 		}
 		return tree;
 	}
 	
 	//Initialize the tree, either with an empty tree or the supplied JSON
-	if (typeof(json) === "object" && validateRtTree(json) ) { //If we have been given a valid reliantree, use it
+	if (typeof(json) === "object" && this.util.validateRtTree(json) ) { //If we have been given a valid reliantree, use it
 		tree = loadTree(json);
 		if (tree.reliantreeVersion != rtCurrentVersion) { //Update version info if not up-to-date
 			tree.reliantreeVersion = rtCurrentVersion;
 			tree.rtClientVersionList.unshift(rtCurrentVersion);
 		}
 	} else {
-		tree = emptyRtTree(); //Otherwise, make a new one
+		tree = self.util.emptyRtTree(); //Otherwise, make a new one
 	}
 	
 	//Create a new empty node
-	function emptyNode(){
+	this.util.emptyNode = function (){
 		var node = {};
 		node.type = null;
 		node.title = "";
 		node.description = "";
-		node.failureRate = "";
+		node.failureRate = "0";
 		node.fixedRate = false;
 		node.parent = null;
 		node.children = [];
@@ -189,7 +404,7 @@ function rtTree(json){
 	//Create a new (empty) node
 	this.node.create = function (){
 		var newID = Guid(); //Get a new GUID for it
-		tree.nodes[newID] = emptyNode();
+		tree.nodes[newID] = self.util.emptyNode();
 		return newID;
 	}
 	
@@ -235,7 +450,7 @@ function rtTree(json){
 				if (verify) { //If it does, make sure the intention is to delete them all
 					removeFromParent(ID); //Remove node from children of current parent
 					var hitList = []; //An array of the GUIDs of all the nodes to be deleted
-					simpleTraverse(tree, ID, function (tree, ID){ //Build list of all children of the node
+					self.util.simpleTraverse(tree, ID, function (tree, ID){ //Build list of all children of the node
 						hitList.push(ID);
 					});
 					for(node in hitList){ //Delete all the nodes in the deletion list
@@ -261,11 +476,11 @@ function rtTree(json){
 	this.tree.setOrigin = function (ID){
 		if (tree.nodes[ID]) {
 			var levelDiff = tree.nodes[ID].internal.level;
-			simpleTraverse(tree, ID, function (tree, ID){
+			self.util.simpleTraverse(tree, ID, function (tree, ID){
 				tree.nodes[ID].internal.level -= levelDiff; //Lower the level of everything so that the tree starts at zero
 			});
 			removeFromParent(ID)
-			simpleTraverse(tree, ID, function (tree, ID){
+			self.util.simpleTraverse(tree, ID, function (tree, ID){
 				tree.nodes[ID].internal.level = tree.nodes[ID].internal.level * -1 - 1; //Change all level data to negative
 			});
 			tree.treeOrigin = ID;
@@ -278,8 +493,17 @@ function rtTree(json){
 		return $.extend({}, tree);
 	}
 	
-	//Outputs a JSON string compliant with the Reliantree spec
+	//Outputs an object compliant with the Reliantree spec
 	this.tree.output = function (){
+		var stripped = $.extend({}, tree); //Make a copy to remove internal properties from
+		for(node in stripped.nodes){
+			delete stripped.nodes[node].internal; //Remove all internal properties from every node
+		}
+		return stripped;
+	}
+	
+	//Outputs a JSON string compliant with the Reliantree spec
+	this.tree.outputJSON = function (){
 		var stripped = $.extend({}, tree); //Make a copy to remove internal properties from
 		for(node in stripped.nodes){
 			delete stripped.nodes[node].internal; //Remove all internal properties from every node
