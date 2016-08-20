@@ -73,6 +73,12 @@ var sampleTree = {
 
 //Reliantree-compliant version number type with comparison operators
 function rtVersionNumber(initial, minor, revision, gold){
+	
+	//Autoinstantiation
+	if (!(this instanceof rtVersionNumber)) {
+		return new rtVersionNumber(arguments, true);
+	}	
+	
 	//Internals
 	var vn = {};
 	var self = this;
@@ -97,6 +103,12 @@ function rtVersionNumber(initial, minor, revision, gold){
 	}
 	
 	//Constructor
+	if (initial instanceof Object && minor === true) {
+		gold = initial[3];
+		revision = initial[2];
+		minor = initial[1];
+		initial = initial[0];
+	}
 	if (!parseVersionNumber(initial)) {
 		if (typeof initial === "number" && initial >= 0) {
 			vn.major = initial;
@@ -177,7 +189,7 @@ function rtVersionNumber(initial, minor, revision, gold){
 	addVnExternalProp("gold",		true	);
 	
 	//Exports version number as string
-	this.toString = function (){
+	self.toString = function (){
 		return vn.major.toString() + "." + vn.minor.toString() + "." + vn.revision.toString() + (vn.gold ? "G" : "");
 	}
 	
@@ -191,7 +203,7 @@ function rtVersionNumber(initial, minor, revision, gold){
 			}
 	});
 	
-	this.equals = function (rtvn, weak){
+	self.equals = function (rtvn, weak){
 		if (rtvn.constructor.name === "rtVersionNumber") {
 			if ( vn.major == rtvn.major && vn.minor == rtvn.minor && vn.revision == rtvn.revision ){
 				if( weak === true ) {
@@ -211,7 +223,7 @@ function rtVersionNumber(initial, minor, revision, gold){
 		}
 	};
 	
-	this.greaterThan = function (rtvn){
+	self.greaterThan = function (rtvn){
 		if (rtvn.constructor.name === "rtVersionNumber") {
 			if (vn.major > rtvn.major) {
 				return true;
@@ -227,7 +239,7 @@ function rtVersionNumber(initial, minor, revision, gold){
 		}
 	};
 	
-	this.greaterThanOrEqual = function (rtvn, weak){
+	self.greaterThanOrEqual = function (rtvn, weak){
 		if (rtvn.constructor.name === "rtVersionNumber") {
 			if (vn.major > rtvn.major) {
 				return true;
@@ -243,7 +255,7 @@ function rtVersionNumber(initial, minor, revision, gold){
 		}
 	};
 	
-	this.lessThan = function (rtvn){
+	self.lessThan = function (rtvn){
 		if (rtvn.constructor.name === "rtVersionNumber") {
 			if (vn.major < rtvn.major) {
 				return true;
@@ -259,7 +271,26 @@ function rtVersionNumber(initial, minor, revision, gold){
 		}
 	};
 	
-	this.lessThanOrEqual = function (rtvn, weak){
+	//Specialty test only used for unit testing
+	self.lessThan_GoldXor = function (rtvn){
+		if (rtvn.constructor.name === "rtVersionNumber") {
+			if (vn.major < rtvn.major) {
+				return true;
+			} else if (vn.minor < rtvn.minor) {
+				return true;
+			} else if (vn.revision < rtvn.revision) {
+				return true;
+			} else if (vn.gold != rtvn.gold) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
+		}
+	};
+	
+	self.lessThanOrEqual = function (rtvn, weak){
 		if (rtvn.constructor.name === "rtVersionNumber") {
 			if (vn.major < rtvn.major) {
 				return true;
@@ -279,6 +310,11 @@ function rtVersionNumber(initial, minor, revision, gold){
 };
 
 function rtTree(json){
+	
+	//Autoinstantiation
+	if (!(this instanceof rtTree)) {
+		return new rtTree(json);
+	}
 	
 	var tree; //The internal tree object
 	
@@ -361,7 +397,7 @@ function rtTree(json){
 		for (node in headless) {
 			var node = tree.nodes[headless[node]];
 			node.internal = {};
-			node.internal.level = -1;
+			node.internal.level <= -1;
 			node.internal.bigFailureRate = new Big(node.failureRate);
 		}
 		return tree;
