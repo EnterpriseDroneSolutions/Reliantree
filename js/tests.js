@@ -28,7 +28,7 @@ function decreasingVersionList(start, count){
 	var outList = [start.vn];
 	var maxCount = (start.major + 1) * (start.minor + 1) * (start.revision + 1);
 	count = ( count <= maxCount ) ? count : maxCount;
-	for (i = 1; i <= count; i++) {
+	for (var i = 1; i <= count; i++) {
 		list[i] = new rtVersionNumber(list[i-1].vn);
 		list[i].major = Math.round(start.major * (count-i) / count);
 		list[i].minor = ( list[i].major < list[i-1].major ) ? ( list[i].minor = Math.floor(Math.random() * 30) ) : ( list[i].minor = Math.floor(Math.random() * list[i-1].minor) );
@@ -84,7 +84,7 @@ function generateValidNode(internal, spoof){
 		}
 		if (node.type !== null) {
 			var childCount = Math.round(Math.random() * 6);
-			for (i = 0; i < childCount; i++) {
+			for (var i = 0; i < childCount; i++) {
 				node.children[i] = Guid();
 			}
 		}
@@ -118,7 +118,7 @@ function generateValidTree(internal){
 	tree.calculationMode = Math.round(Math.random()) ? "up" : "down";
 	tree.nodes = {};
 	var nodeCount = Math.ceil(Math.random() * 100);
-	for (i = 0; i < nodeCount; i++) {
+	for (var i = 0; i < nodeCount; i++) {
 		tree.nodes[Guid()] = generateValidNode(internal, false);
 	}
 	var nodeList = Object.keys(tree.nodes);
@@ -128,7 +128,7 @@ function generateValidTree(internal){
 		tree.nodes[ID].parent = up;
 		//Build unused node list
 		var availableNodes = [];
-		for (i = 0; i < nodeList.length; i++) {
+		for (var i = 0; i < nodeList.length; i++) {
 			if (usedNodes.indexOf(nodeList[i]) === -1) {
 				availableNodes.push(nodeList[i]);
 			}
@@ -137,7 +137,7 @@ function generateValidTree(internal){
 		if (depth<2) {
 			childCount++;
 		}
-		for (i = 0; i < childCount; i++) {
+		for (var i = 0; i < childCount; i++) {
 			if (availableNodes.length > 0) {
 				var pos = Math.floor(Math.random() * availableNodes.length);
 				tree.nodes[ID].children[i] = availableNodes[pos];
@@ -354,7 +354,7 @@ if (typeof QUnit === "object") {
 			this.isValidVersion(tree.reliantreeVersion, message+": Valid current version number");
 			this.isArray(tree.rtClientVersionList, message+": Has client version array");
 			this.equal(tree.reliantreeVersion, tree.rtClientVersionList[0], message+": Latest client is current client");
-			for (version = 1; version < tree.rtClientVersionList.length; version++) {
+			for (var version = 1; version < tree.rtClientVersionList.length; version++) {
 				this.isValidVersion(tree.rtClientVersionList[version], message+": In client version list: Valid version number");
 				this.pushResult({
 					result: rtVersionNumber(tree.rtClientVersionList[version]).lessThan_GoldXor(rtVersionNumber(tree.rtClientVersionList[version-1])),
@@ -376,7 +376,7 @@ if (typeof QUnit === "object") {
 				expected: "Same version number or no server version records",
 				message: message+": Latest server is current server"
 			});
-			for (version = 1; version < tree.rtServerVersionList.length; version++) {
+			for (var version = 1; version < tree.rtServerVersionList.length; version++) {
 				this.isValidVersion(tree.rtServerVersionList[version], message+": In server version list: Valid version number");
 				this.pushResult({
 					result: rtVersionNumber(tree.rtServerVersionList[version]).lessThan_GoldXor(rtVersionNumber(tree.rtServerVersionList[version-1])),
@@ -437,7 +437,7 @@ if (typeof QUnit === "object") {
 	QUnit.module("guid.js");
 	
 	QUnit.test( "GUID Test", function( assert ) {
-	for (i = 0; i < 10; i++) { 
+	for (var i = 0; i < 10; i++) { 
 		var testGuid = Guid()
 		assert.isGUID(testGuid, "Test GUID: "+testGuid );
 	}
@@ -474,7 +474,9 @@ if (typeof QUnit === "object") {
 		assert.isValidTree(sampleTree, "Validating sample tree", false, true);
 	});
 	
-	QUnit.test("generateValidTree intial test", function (assert){
-		assert.isValidTree(generateValidTree(), "Validating resultant tree", false, true);
+	QUnit.test("generateValidTree 25X Test", function (assert){
+		for (i = 0; i < 25; i++) {
+			assert.isValidTree(generateValidTree(), "Validating resultant tree", false, true);
+		}
 	});
 }

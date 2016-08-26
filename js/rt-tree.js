@@ -72,6 +72,7 @@ var sampleTree = {
 
 
 //Reliantree-compliant version number type with comparison operators
+//Will fill any non-supplied fields with random data (for use in unit testing).
 function rtVersionNumber(initial, minor, revision, gold){
 	
 	//Autoinstantiation
@@ -203,6 +204,7 @@ function rtVersionNumber(initial, minor, revision, gold){
 			}
 	});
 	
+	//Check if another version number is equal to this one.
 	self.equals = function (rtvn, weak){
 		if (rtvn.constructor.name === "rtVersionNumber") {
 			if ( vn.major == rtvn.major && vn.minor == rtvn.minor && vn.revision == rtvn.revision ){
@@ -223,13 +225,20 @@ function rtVersionNumber(initial, minor, revision, gold){
 		}
 	};
 	
-	self.greaterThan = function (rtvn){
+	//Generic comparison of version numbers (not including simple equality).
+	//Direction is false for less than, true for greater than. Equal determines if equal values are accepted. Weak determines if gold setting is considered in equality.
+	//Gold XOR case (the gold value of this VN is different from that of the input VN) can be triggered by setting equal to false and weak to true.
+	function cascadingComparison(rtvn, direction, equal, weak){
 		if (rtvn.constructor.name === "rtVersionNumber") {
-			if (vn.major > rtvn.major) {
+			if (direction ? (vn.major > rtvn.major) : (vn.major < rtvn.major)) {
 				return true;
-			} else if (vn.minor > rtvn.minor) {
+			} else if (direction ? (vn.minor > rtvn.minor) : (vn.minor < rtvn.minor)) {
 				return true;
-			} else if (vn.revision > rtvn.revision) {
+			} else if (direction ? (vn.revision > rtvn.revision) : (vn.revision < rtvn.revision)) {
+				return true;
+			} else if (equal === true && self.equals(rtvn, weak)) {
+				return true;
+			} else if (equal === false && weak === true && vn.gold != rtvn.gold) {
 				return true;
 			} else {
 				return false;
@@ -237,76 +246,14 @@ function rtVersionNumber(initial, minor, revision, gold){
 		} else {
 			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
 		}
-	};
-	
-	self.greaterThanOrEqual = function (rtvn, weak){
-		if (rtvn.constructor.name === "rtVersionNumber") {
-			if (vn.major > rtvn.major) {
-				return true;
-			} else if (vn.minor > rtvn.minor) {
-				return true;
-			} else if (vn.revision > rtvn.revision) {
-				return true;
-			} else if (self.equals(rtvn, weak)) {
-				return false;
-			}
-		} else {
-			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
-		}
-	};
-	
-	self.lessThan = function (rtvn){
-		if (rtvn.constructor.name === "rtVersionNumber") {
-			if (vn.major < rtvn.major) {
-				return true;
-			} else if (vn.minor < rtvn.minor) {
-				return true;
-			} else if (vn.revision < rtvn.revision) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
-		}
-	};
-	
-	//Specialty test only used for unit testing
-	self.lessThan_GoldXor = function (rtvn){
-		if (rtvn.constructor.name === "rtVersionNumber") {
-			if (vn.major < rtvn.major) {
-				return true;
-			} else if (vn.minor < rtvn.minor) {
-				return true;
-			} else if (vn.revision < rtvn.revision) {
-				return true;
-			} else if (vn.gold != rtvn.gold) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
-		}
-	};
-	
-	self.lessThanOrEqual = function (rtvn, weak){
-		if (rtvn.constructor.name === "rtVersionNumber") {
-			if (vn.major < rtvn.major) {
-				return true;
-			} else if (vn.minor < rtvn.minor) {
-				return true;
-			} else if (vn.revision < rtvn.revision) {
-				return true;
-			} else if (self.equals(rtvn, weak)) {
-				return false;
-			}
-		} else {
-			throw "Input is " + rtvn.constructor.name + ", not rtVersionNumber!";
-		}
-	};
-	
-	return self;
+	}
+		
+	//Version number comparison operators
+	self.greaterThan		= function (rtvn)		{return cascadingComparison(rtvn,	true,	false,	false	);};
+	self.greaterThanOrEqual	= function (rtvn, weak)	{return cascadingComparison(rtvn,	true,	true,	weak	);};
+	self.lessThan			= function (rtvn)		{return cascadingComparison(rtvn,	false,	false,	false	);};
+	self.lessThanOrEqual	= function (rtvn, weak)	{return cascadingComparison(rtvn,	false,	true,	weak	);};
+	self.lessThan_GoldXor	= function (rtvn)		{return cascadingComparison(rtvn,	false,	false,	true	);};
 };
 
 function rtTree(json){
