@@ -21,6 +21,18 @@ function validationTraverse (assert, tree, ID, callback, depth, up){
 	}
 }
 
+//Creates a new rtVersionNumber with random data for all fields.
+function generateRtVersionNumber(major){
+	var rtvn = new rtVersionNumber(major);
+	if (!isLikeNumber(major)) {
+		rtvn.major = Math.floor(Math.random() * 10);
+	}
+	rtvn.minor = Math.floor(Math.random() * 30);
+	rtvn.revision = Math.floor(Math.random() * 50);
+	rtvn.gold = Math.round(Math.random()) ? true : false;
+	return rtvn;
+}
+
 //Creates array of decreasing version numbers starting with the current one for unit testing purposes
 //Since trees are only allowed to be processed by the last version opening them or newer, each version in the history must be lower than the next.
 function decreasingVersionList(start, count){
@@ -55,7 +67,7 @@ function pickItem(array){
 	}
 }
 
-//Generates a valid node
+//Generates a valid node as a JavaScript object. TODO: Make a version of this that generates a node using only functions of rtNode
 function generateValidNode(internal, spoof){
 	var node = {};
 	//really, i'm having too much fun with this
@@ -104,14 +116,14 @@ function generateValidNode(internal, spoof){
 	return node;
 }
 
-//Generates (read: will generate) a valid tree
+//Generates a valid tree as a JavaScript object. TODO: Make a version of this that generates a tree using only functions of rtTree
 function generateValidTree(internal){
 	internal = typeof internal !== "undefined" ? internal : false;
 	var tree = {};
 	var majorVersion = Math.floor(Math.random() * 10);
-	var reliantreeVersion = new rtVersionNumber(majorVersion);
+	var reliantreeVersion = generateRtVersionNumber(majorVersion);
 	tree.reliantreeVersion = reliantreeVersion.vn;
-	var rtServerVersion = new rtVersionNumber(majorVersion);
+	var rtServerVersion = generateRtVersionNumber(majorVersion);
 	tree.rtServerVersion = rtServerVersion.vn;
 	tree.rtClientVersionList = decreasingVersionList(reliantreeVersion, Math.ceil(Math.random() * 9));
 	tree.rtServerVersionList = decreasingVersionList(rtServerVersion, Math.ceil(Math.random() * 9));
@@ -250,7 +262,7 @@ if (typeof QUnit === "object") {
 	QUnit.assert.isValidNode = function (node, message, internal, tree){
 		if (typeof tree === "object" && /^(\d+\.){2}(\d+G?)$/g.test(tree.reliantreeVersion) && typeof node === "string") { //Verify we are in tree mode and tree is valid
 			this.isGUID(node, message+": Valid node reference");
-			if (tree.nodes[node]) {
+			if (node in tree.nodes) {
 				this.pushResult({
 					result: true,
 					actual: node,

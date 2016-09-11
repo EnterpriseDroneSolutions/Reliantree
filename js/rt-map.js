@@ -6,6 +6,15 @@ This file is part of Reliantree, which is licensed under the GNU Affero General 
 You should have received a copy of this license along with Reliantree.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//Functions for other files
+var rtMap = {};
+rtMap.mapNodes = {}; //List of all nodes on the map.
+
+rtMap.getNewCoords = function (){
+	var emitter = $("#rt-new-node");
+	return {left:(emitter.position().left + emitter.width()),top:(emitter.position().top + emitter.height())};
+};
+
 ////////////////////Handlers
 //Auto-grow (and shrink) textarea vertically with content, with an optional minimum and maximum height
 function growText(s,minHeight,maxHeight){
@@ -30,20 +39,44 @@ function growText(s,minHeight,maxHeight){
 //Grow node description field - extension of growText
 function growNodeDesc(s){growText(s.target,107);}
 
+// !!! TRANSITIONAL !!!
+//Determines if the cursor position of the passed event is in the trash zone
+//Returns true if it is above the delete widget
+//Returns false if it's not
+//Returns null if the argument is invalid
+//Params: (string selector, object event)
+function ifOver(s, e) {
+	if (typeof s !== "string") throw new Error(String(s)+" is not a string");
+	if (typeof e === "object" && e.pageX && e.pageY) {
+		var holdout = $(s);
+		var x1 = holdout.position().left;
+		var y1 = holdout.position().top;
+		var x2 = x1 + holdout.width();
+		var y2 = y1 + holdout.height();
+		if (e.pageX >= x1 && e.pageX <= x2 && e.pageY >= y1 && e.pageY <= y2) {
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		return null;
+	}
+}
+
 //Pin node to cursor for drag-and-drop action
 function dragNode(s,xOffset,yOffset){
-	if(typeof xOffset === "number") this.xOffset = xOffset; //Get a new offset from drag start
-	if(typeof yOffset === "number") this.yOffset = yOffset; //As above
-	if(typeof this.xOffset !== "number") this.xOffset = 0; //Initialize offset with zero
-	if(typeof this.yOffset !== "number") this.yOffset = 0; //As above
-	if(s && s.data.targetNode){
-		s.preventDefault(); //Prevent everything getting selected while dragging
-		var x = s.pageX-this.xOffset;
-		var y = s.pageY-this.yOffset;
+	if(typeof xOffset === "number") dragNode.xOffset = xOffset; //Get a new offset from drag start
+	if(typeof yOffset === "number") dragNode.yOffset = yOffset; //As above
+	if(typeof dragNode.xOffset !== "number") dragNode.xOffset = 0; //Initialize offset with zero
+	if(typeof dragNode.yOffset !== "number") dragNode.yOffset = 0; //As above
+	if(s){
+		var x = s.pageX-dragNode.xOffset;
+		var y = s.pageY-dragNode.yOffset;
 		var pageW = $(window).width();
 		var pageH = $(window).height();
 		var m = $("#rt-map").position();
-		if(s.pageX && s.pageY){
+		var det = ifOver("#rt-bin-node", s);
+		if (det === false) {
 			var bound = 50;
 			var scale = 18;
 			if(s.pageX<bound){
@@ -60,16 +93,18 @@ function dragNode(s,xOffset,yOffset){
 			}else{
 				autoPan(null,0);
 			}
+		} else if (det === true) {
+			autoPan(0, 0);
 		}
-		x = x ? x : this.x;
-		y = y ? y : this.y;
-		$(s.data.targetNode).parent().css({
+		x = x ? x : dragNode.x;
+		y = y ? y : dragNode.y;
+		$(this).parent().css({
 			left: x,
 			top: y
 		}); //Move the node
-		$("#rt-node-prototype").css(snapNode($(s.data.targetNode).parent())); //Move the preview node
-		this.x = x ? x : this.x;
-		this.y = y ? y : this.y;
+		$("#rt-node-prototype").css(snapNode($(this).parent())); //Move the preview node
+		dragNode.x = x ? x : dragNode.x;
+		dragNode.y = y ? y : dragNode.y;
 	}
 }
 
@@ -90,15 +125,15 @@ function snapNode(node, snap){
 //Pin map to cursor for panning action
 function dragMap(s,xStart,yStart){
 	if(typeof xStart === "number" && typeof xStart === "number"){
-		this.xStart = xStart; //Get a new mouse start point from pan start
-		this.yStart = yStart; //As above
-		this.oStart = $("#rt-map").position(); //Get map start coords
+		dragMap.xStart = xStart; //Get a new mouse start point from pan start
+		dragMap.yStart = yStart; //As above
+		dragMap.oStart = $("#rt-map").position(); //Get map start coords
 	}
 	if(s){
 		s.preventDefault(); //Prevent everything getting selected while panning
 		$("#rt-map").css({
-			left:	s.pageX-this.xStart+this.oStart.left,
-			top:	s.pageY-this.yStart+this.oStart.top < 0 ? s.pageY-this.yStart+this.oStart.top : 0
+			left:	s.pageX-dragMap.xStart+dragMap.oStart.left,
+			top:	s.pageY-dragMap.yStart+dragMap.oStart.top < 0 ? s.pageY-dragMap.yStart+dragMap.oStart.top : 0
 		}); //Pan the map
 	}
 }
@@ -131,6 +166,66 @@ function autoPan(vx,vy){
 	}
 }
 
+//jQuery extension: drag
+//Generic drag-and-drop handler
+//Captures mouse movements in the entire window for maximum robustness
+//Parameters: (function drag(event), [function on(event), [function off(event)]], [boolean single])
+//Drag is called on mouse move.
+//On is called on mouse down, if undefined, drag is called on mouse down.
+//Off is called on mouse up, if undefined, on is called on mouse up, if undefined, drag is called on mouse up.
+//Single, if true, prevents the default handlers for these events. e.g. preventing drag selection
+$.fn.drag = function (drag, on, off, single){
+	//Argument validation
+	if (typeof drag !== "function") {
+		throw new Error(String(drag)+" is not a function");
+	}
+	//Pseudo-overloading
+	if (typeof single !== "boolean") {
+		//console.log("$.drag(): single not passed");
+		single = false;
+		if (typeof on === "boolean") {
+			//console.log("$.drag(): single redefined as on");
+			single = on;
+			on = undefined;
+		}
+		if (typeof off === "boolean") {
+			//console.log("$.drag(): single redefined as off");
+			single = off;
+			off = undefined;
+		}
+	}
+	if (typeof on !== "function") {
+		//console.log("$.drag(): on redefined as drag");
+		on = drag;
+	}
+	if (typeof off !== "function") {
+		//console.log("$.drag(): off redefined as on");
+		off = on;
+	}
+	$(this)
+		.on('mousedown',function(e){ //Start drag-and-drop
+			//Copy jQuery "this" to pass to handlers
+			var self = this;
+			on.call(self, e);
+			if (single) e.preventDefault();
+			//Interposer-function to prevent default handlers on drag
+			function move(e){
+				drag.call(self, e); //Call actual drag handler with correct this value for jQuery
+				if (single) e.preventDefault();
+			}
+			$(window)
+				.on('mousemove', move)
+				.on('mouseup', function stop(e){ //Stop drag-and-drop
+					off.call(self, e);
+					if (single) e.preventDefault();
+					$(this) //The window
+						.off('mousemove', move) //Remove drag handler
+						.off('mouseup', stop); //Remove this handler
+				});
+		});
+	return this; //Required for jQuery
+}
+
 ////////////////////Initialization
 $(function(){
 	
@@ -147,45 +242,90 @@ $(function(){
 				.off('input', growNodeDesc) //Disable autogrow
 				.css({'height':'111'}); //Reset to default height
 		});
-		
+	
+	//Truly and completely prevent selection of anything when clicking and dragging elements with 'preventselect' class
+	$('.preventselect').drag(function(e){}, true);
+	
 	//Drag and drop nodes 
-	$('.rt-node-handle')
-		.on('mousedown',function(e){ //Begin drag on mousedown on node's handle
-			e.stopPropagation();
+	$('.rt-node-handle').drag(
+		dragNode, 
+		function(e){ //Begin drag on mousedown on node's handle
 			var offset = $(this).parent().position(); //Get the current location of the node
 			dragNode(null,e.pageX-offset.left,e.pageY-offset.top); //Set the drag offset to keep the exact part of the handle clicked, under the cursor
 			lastDragNode=$(this).parent();
 			lastDragNode.css({"opacity":"0.5"});
-			$("#rt-node-prototype").show().offset(lastDragNode.offset());
-			$(window).on('mousemove', {targetNode: this}, dragNode); //Move the node any time the mouse moves
+			var protoNode = $("#rt-node-prototype");
+			var currNode = rtMap.mapNodes[lastDragNode.attr("id")];
+			protoNode.show().offset(lastDragNode.offset());
+			//Copy node data to ghost
+			protoNode.find(".rt-node-title").val(currNode.title);
+			protoNode.find(".rt-node-description").val(currNode.description);
+			protoNode.find(".rt-node-failure-rate").val(currNode.internal.bigFailureRate.toString());
+			protoNode.find(".rt-node-reliability-fixed").attr("checked", currNode.fixedRate);
 			$("#rt-map-grid").css({"opacity":"1"}); //Show levels grid
-		});
-		
-	//Pan map
-	$("#rt-map")
-		.on('mousedown',"#rt-map-grid",function(e){ //Begin pan on mousedown on background
-			dragMap(null,e.pageX,e.pageY); //Set the mouse startpoint
-			$(window).on('mousemove', dragMap); //Pan the map any time the mouse moves
-		});
-	
-	//End drag and pan on mouseup anywhere
-	$(window)
-		.on('mouseup',function(){
-			$(window).off('mousemove', dragNode);
-			$(window).off('mousemove', dragMap);
+		},
+		function (e){
+			if (ifOver("#rt-bin-node", e)) {
+				rtMap.mapNodes[$(this).parent().attr("id")].remove(); //Remove the node if dropped on the remove widget
+			} else {
+				snapNode(lastDragNode, true); //Snap node to ghost (valid position)
+			}
 			autoPan(0,0); //Stop autopanning
 			$("#rt-map-grid").css({"opacity":"0"}); //Hide levels grid
 			lastDragNode.css({"opacity":"1"});
-			snapNode(lastDragNode, true);
 			$("#rt-node-prototype").hide();
-		});
+		}, 
+		true
+	);
+		
+	//Pan map
+	$("#rt-map-grid").drag(
+		dragMap,
+		function(e){ //Begin pan on mousedown on background
+			dragMap(null,e.pageX,e.pageY); //Set the mouse startpoint
+		}, 
+		true
+	);
 	
 	//Autopan map
 	$("#rt-map").offset({left:$(window).width()*-4.5}); //Get map into center position
 	window.setInterval(autoPan,16.666); //Run panner at ~60fps
 	
+	//Handle the transition between dragging the new node widget and dragging the new node (on mouseout from the widget)
+	function newNodeTransition(e){
+		$(window).trigger("mouseup"); //Simulate a mouseup to cancel the widget's drag
+		var handle = $("#"+rtNode().internal.id+" .rt-node-handle"); //Make a node and select its (handle's) DOM representation
+		handle.parent().offset({left: e.pageX, top: e.pageY}); //Move it to the current cursor location
+		handle.trigger(jQuery.Event("mousedown", {pageX: e.pageX, pageY: e.pageY})); //Simulate a mousedown (at the current cursor to position) to start the node's drag
+	}
+	
+	//Grab and drag to create node
+	$("#rt-new-node").drag(
+		function (e){
+			var dist = Math.round(Math.hypot(Math.max(1, e.pageX - this.style.left), Math.max(1, e.pageY - this.style.top)));
+			var size = Math.max(this.initSize, Math.min(this.initSize * 1.5, dist / this.initDist * this.initSize));
+			$(this).width(size).height(size);
+		},
+		function (e){
+			$(this).on("mouseout", newNodeTransition);
+			$(this).addClass("notrans");
+			this.initDist = Math.round(Math.hypot(Math.max(1, e.pageX - this.style.left), Math.max(1, e.pageY - this.style.top)));
+			this.initSize = $(this).width();
+		},
+		function (e){
+			$(this).off("mouseout", newNodeTransition);
+			$(this).removeClass("notrans");
+			$(this).width(this.initSize).height(this.initSize);
+			delete this.initDist;
+			delete this.initSize;
+		},
+		true
+	);
+	
 	//Test code for multiple nodes.
 	for(var i = 0; i<3; i++){
-		$('#rt-node-prototype').clone(true).removeAttr("id").show().offset({top:8,left:160*i+50+$(window).width()*4.5}).appendTo("#rt-nodes");
+		var newnode = new rtNode("Reliantree", "A tool for creating, analyzing and driving Reliability trees.", 0.000000001, false);
+		rtMap.mapNodes[newnode.internal.id] = newnode;
+		$('#'+newnode.internal.id).offset({top:8,left:160*i+100});
 	}
 });

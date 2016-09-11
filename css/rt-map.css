@@ -1,12 +1,12 @@
 /*
-rt-map.css - Stylesheet for the map (panning system) in the Reliantree Client.
+rt-map.css - Stylesheet for the map (panning system) and widgets in the Reliantree Client.
 Copyright (c) 2016 Enterprise Drone Solutions, LLC
 
 This file is part of Reliantree, which is licensed under the GNU Affero General Public License version 3.
 You should have received a copy of this license along with Reliantree.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#rt-map{
+#rt-map {
 	position: absolute;
 	top: 0px;
 	left: -500%;
@@ -14,7 +14,7 @@ You should have received a copy of this license along with Reliantree.  If not, 
 	height: 1000%;
 }
 
-#rt-map-grid{
+#rt-map-grid {
 	position: absolute;
 	width: 100%;
 	height: 100%;
@@ -23,4 +23,48 @@ You should have received a copy of this license along with Reliantree.  If not, 
 	transition: opacity .5s;
 	opacity: 0;
 }
-	
+
+#rt-widgets {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	pointer-events: none;
+}
+
+#rt-widgets-left, #rt-widgets-right {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 60px;
+	padding: 10px;
+}
+
+#rt-widgets-left {
+	left: 0;
+}
+
+#rt-widgets-right {
+	right: 0;
+}
+
+.rt-widget-basic {
+	height: 40px;
+	width: 40px;
+	margin-bottom: 10px;
+	background-color: #0099a2;
+	background-size: contain;
+	box-shadow: 0px 1px 8px -3px black;
+	cursor: pointer;
+	pointer-events: auto;
+}
+
+#rt-new-node {
+	background-image: url("../img/add.svg");
+	transition: width 0.1s, height 0.1s;
+}
+
+#rt-bin-node {
+	background-image: url("../img/bin.svg");
+}

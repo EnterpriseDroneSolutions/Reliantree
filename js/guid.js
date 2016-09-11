@@ -52,7 +52,7 @@ var _guid = function () {
 //Determine which method of generating the GUID will be used, and use it.
 var create = function () {
     var hasCrypto = typeof (window.crypto) != 'undefined',
-        hasRandomValues = typeof (window.crypto.getRandomValues) != 'undefined';
+        hasRandomValues = hasCrypto ? typeof (window.crypto.getRandomValues) != 'undefined' : false;
     return (hasCrypto && hasRandomValues) ? _cryptoGuid() : _guid();
 };
 
