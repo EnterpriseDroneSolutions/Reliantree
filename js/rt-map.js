@@ -98,8 +98,6 @@ function dragNode(s,xOffset,yOffset){
 		}
 		ax = x ? x : dragNode.x - (dragNode.xOffset + m.left);
 		ay = y ? y : dragNode.y - (dragNode.yOffset + m.top);
-		console.log(dragNode.x);
-		console.log(ax);
 		$(this).parent().css({
 			left: ax,
 			top: ay
@@ -183,25 +181,20 @@ $.fn.drag = function (drag, on, off, single){
 	}
 	//Pseudo-overloading
 	if (typeof single !== "boolean") {
-		//console.log("$.drag(): single not passed");
 		single = false;
 		if (typeof on === "boolean") {
-			//console.log("$.drag(): single redefined as on");
 			single = on;
 			on = undefined;
 		}
 		if (typeof off === "boolean") {
-			//console.log("$.drag(): single redefined as off");
 			single = off;
 			off = undefined;
 		}
 	}
 	if (typeof on !== "function") {
-		//console.log("$.drag(): on redefined as drag");
 		on = drag;
 	}
 	if (typeof off !== "function") {
-		//console.log("$.drag(): off redefined as on");
 		off = on;
 	}
 	$(this)
