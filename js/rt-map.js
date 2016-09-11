@@ -65,16 +65,16 @@ function ifOver(s, e) {
 
 //Pin node to cursor for drag-and-drop action
 function dragNode(s,xOffset,yOffset){
-	if(typeof xOffset === "number") dragNode.xOffset = xOffset; //Get a new offset from drag start
-	if(typeof yOffset === "number") dragNode.yOffset = yOffset; //As above
+	var m = $("#rt-map").position();
+	if(typeof xOffset === "number") dragNode.xOffset = xOffset - m.left; //Get a new offset from drag start
+	if(typeof yOffset === "number") dragNode.yOffset = yOffset - m.top; //As above
 	if(typeof dragNode.xOffset !== "number") dragNode.xOffset = 0; //Initialize offset with zero
 	if(typeof dragNode.yOffset !== "number") dragNode.yOffset = 0; //As above
 	if(s){
-		var x = s.pageX-dragNode.xOffset;
-		var y = s.pageY-dragNode.yOffset;
+		var x = s.pageX - (dragNode.xOffset + m.left);
+		var y = s.pageY - (dragNode.yOffset + m.top);
 		var pageW = $(window).width();
 		var pageH = $(window).height();
-		var m = $("#rt-map").position();
 		var det = ifOver("#rt-bin-node", s);
 		if (det === false) {
 			var bound = 50;
@@ -96,15 +96,17 @@ function dragNode(s,xOffset,yOffset){
 		} else if (det === true) {
 			autoPan(0, 0);
 		}
-		x = x ? x : dragNode.x;
-		y = y ? y : dragNode.y;
+		ax = x ? x : dragNode.x - (dragNode.xOffset + m.left);
+		ay = y ? y : dragNode.y - (dragNode.yOffset + m.top);
+		console.log(dragNode.x);
+		console.log(ax);
 		$(this).parent().css({
-			left: x,
-			top: y
+			left: ax,
+			top: ay
 		}); //Move the node
 		$("#rt-node-prototype").css(snapNode($(this).parent())); //Move the preview node
-		dragNode.x = x ? x : dragNode.x;
-		dragNode.y = y ? y : dragNode.y;
+		dragNode.x = x ? s.pageX : dragNode.x;
+		dragNode.y = y ? s.pageY : dragNode.y;
 	}
 }
 
