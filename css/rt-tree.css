@@ -10,6 +10,11 @@ You should have received a copy of this license along with Reliantree.  If not, 
 	display: none;
 	position: absolute;
 }
+
+#rt-node-prototype {
+	transition: top 0.15s;
+}
+
 .rt-node-wrapper {
 	position: absolute;
 	background: MintCream;
